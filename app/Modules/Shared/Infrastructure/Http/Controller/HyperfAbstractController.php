@@ -10,14 +10,14 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 
-namespace App\Controller;
+namespace App\Modules\Shared\Infrastructure\Http\Controller;
 
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use Psr\Container\ContainerInterface;
 
-abstract class AbstractController
+abstract class HyperfAbstractController
 {
     #[Inject]
     protected ContainerInterface $container;
