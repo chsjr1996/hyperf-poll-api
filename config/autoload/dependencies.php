@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Modules\Polls\Domain\Question\QuestionRepositoryContract;
 use App\Modules\Polls\Domain\User\UserRepositoryContract;
+use App\Modules\Polls\Infrastructure\Question\Repository\HyperfQuestionRepository;
 use App\Modules\Polls\Infrastructure\User\Repository\HyperfUserRepository;
 
 /**
@@ -16,4 +18,5 @@ use App\Modules\Polls\Infrastructure\User\Repository\HyperfUserRepository;
 return [
     // Repositories
     UserRepositoryContract::class => HyperfUserRepository::class,
+    QuestionRepositoryContract::class => HyperfQuestionRepository::class,
 ];
