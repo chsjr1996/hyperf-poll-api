@@ -1,6 +1,10 @@
 <?php
 
 declare(strict_types=1);
+
+use App\Modules\Polls\Domain\User\UserRepositoryContract;
+use App\Modules\Polls\Infrastructure\User\Repository\HyperfUserRepository;
+
 /**
  * This file is part of Hyperf.
  *
@@ -10,4 +14,6 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 return [
+    // Repositories
+    UserRepositoryContract::class => HyperfUserRepository::class,
 ];
