@@ -6,9 +6,10 @@ namespace App\Modules\Polls\Infrastructure\Question\Repository;
 
 use App\Modules\Polls\Domain\Question\Question;
 use App\Modules\Polls\Domain\Question\QuestionAnswer;
+use App\Modules\Polls\Domain\Question\QuestionEnums;
 use App\Modules\Polls\Domain\Question\QuestionOption;
 use App\Modules\Polls\Domain\Question\QuestionRepositoryContract;
-use App\Modules\Polls\Infrastructure\User\Repository\HyperfUserRepository;
+use App\Modules\Polls\Domain\User\UserEnums;
 use App\Modules\Shared\Infrastructure\Repository\AbstractHyperfRepository;
 use Hyperf\DbConnection\Db;
 use Ramsey\Uuid\Uuid;
@@ -17,11 +18,6 @@ use function Hyperf\Support\now;
 
 class HyperfQuestionRepository extends AbstractHyperfRepository implements QuestionRepositoryContract
 {
-    // TODO: Move these table names to enum inside domain?
-    public const TABLE_NAME = 'questions';
-    public const TABLE_OPTIONS_NAME = 'question_options';
-    public const TABLE_ANSWERS_NAME = 'question_answers';
-
     public function add(Question $question): Question|false
     {
         try {
@@ -31,7 +27,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
             $question->setCreatedAt(now()->format('Y-m-d H:i:s'));
             $question->setUpdatedAt(now()->format('Y-m-d H:i:s'));
 
-            if (!Db::table(self::TABLE_NAME)->insert($question->toArray())) {
+            if (!Db::table(QuestionEnums::TABLE_QUESTIONS->value)->insert($question->toArray())) {
                 throw new \Exception('Error on add question.');
             }
 
@@ -48,7 +44,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
 
     public function read(string $id): ?Question
     {
-        $question = Db::table(self::TABLE_NAME)
+        $question = Db::table(QuestionEnums::TABLE_QUESTIONS->value)
             ->select('*')
             ->where('id', $id)
             ->first();
@@ -69,7 +65,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
 
     public function list(): array
     {
-        return Db::table(self::TABLE_NAME)
+        return Db::table(QuestionEnums::TABLE_QUESTIONS->value)
             ->select('*')
             ->get()
             ->toArray();
@@ -84,7 +80,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
             $questionOption->setCreatedAt(now()->format('Y-m-d H:i:s'));
             $questionOption->setUpdatedAt(now()->format('Y-m-d H:i:s'));
 
-            if (!Db::table(self::TABLE_OPTIONS_NAME)->insert($questionOption->toArray())) {
+            if (!Db::table(QuestionEnums::TABLE_OPTIONS->value)->insert($questionOption->toArray())) {
                 throw new \Exception('Error on add question option.');
             }
 
@@ -101,7 +97,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
 
     public function listOptions(string $questionId): array
     {
-        return Db::table(self::TABLE_OPTIONS_NAME)
+        return Db::table(QuestionEnums::TABLE_OPTIONS->value)
             ->select('*')
             ->where('question_id', $questionId)
             ->get()
@@ -110,7 +106,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
 
     public function readOption(string $questionId, string $optionId): ?QuestionOption
     {
-        $questionOption = Db::table(self::TABLE_OPTIONS_NAME)
+        $questionOption = Db::table(QuestionEnums::TABLE_OPTIONS->value)
             ->select('*')
             ->where('question_id', $questionId)
             ->where('id', $optionId)
@@ -137,7 +133,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
             $questionAnswer->setCreatedAt(now()->format('Y-m-d H:i:s'));
             $questionAnswer->setUpdatedAt(now()->format('Y-m-d H:i:s'));
 
-            if (!Db::table(self::TABLE_ANSWERS_NAME)->insert($questionAnswer->toArray())) {
+            if (!Db::table(QuestionEnums::TABLE_ANSWERS->value)->insert($questionAnswer->toArray())) {
                 throw new \Exception('Error on add question answer.');
             }
 
@@ -154,11 +150,11 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
 
     public function listAnswers(string $questionId): array
     {
-        return Db::table(sprintf('%s as u', HyperfUserRepository::TABLE_NAME))
+        return Db::table(sprintf('%s as u', UserEnums::TABLE_USERS->value))
             ->select('u.name as user_name', 'q.title as question', 'o.title as answer')
-            ->join(sprintf('%s as a', self::TABLE_ANSWERS_NAME), 'a.user_id', '=', 'u.id')
-            ->join(sprintf('%s as o', self::TABLE_OPTIONS_NAME), 'o.id', '=', 'a.question_option_id')
-            ->join(sprintf('%s as q', self::TABLE_NAME), 'q.id', '=', 'o.question_id')
+            ->join(sprintf('%s as a', QuestionEnums::TABLE_ANSWERS->value), 'a.user_id', '=', 'u.id')
+            ->join(sprintf('%s as o', QuestionEnums::TABLE_OPTIONS->value), 'o.id', '=', 'a.question_option_id')
+            ->join(sprintf('%s as q', QuestionEnums::TABLE_QUESTIONS->value), 'q.id', '=', 'o.question_id')
             ->where('q.id', $questionId)
             ->get()
             ->toArray();

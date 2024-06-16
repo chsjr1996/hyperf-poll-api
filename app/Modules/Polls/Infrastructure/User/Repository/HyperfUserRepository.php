@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Polls\Infrastructure\User\Repository;
 
 use App\Modules\Polls\Domain\User\User;
+use App\Modules\Polls\Domain\User\UserEnums;
 use App\Modules\Polls\Domain\User\UserRepositoryContract;
 use App\Modules\Shared\Infrastructure\Repository\AbstractHyperfRepository;
 use Hyperf\DbConnection\Db;
@@ -14,9 +15,6 @@ use function Hyperf\Support\now;
 
 class HyperfUserRepository extends AbstractHyperfRepository implements UserRepositoryContract
 {
-    // TODO: Move it to enum inside domain?
-    public const TABLE_NAME = 'users';
-
     public function add(User $user): User|false
     {
         try {
@@ -26,7 +24,7 @@ class HyperfUserRepository extends AbstractHyperfRepository implements UserRepos
             $user->setCreatedAt(now()->format('Y-m-d H:i:s'));
             $user->setUpdatedAt(now()->format('Y-m-d H:i:s'));
 
-            if (!Db::table(self::TABLE_NAME)->insert($user->toArray())) {
+            if (!Db::table(UserEnums::TABLE_USERS->value)->insert($user->toArray())) {
                 throw new \Exception('Error on add user.');
             }
 
@@ -43,7 +41,7 @@ class HyperfUserRepository extends AbstractHyperfRepository implements UserRepos
 
     public function read(string $id): ?User
     {
-        $user = Db::table(self::TABLE_NAME)
+        $user = Db::table(UserEnums::TABLE_USERS->value)
             ->select('*')
             ->where('id', $id)
             ->first();
@@ -63,7 +61,7 @@ class HyperfUserRepository extends AbstractHyperfRepository implements UserRepos
 
     public function list(): array
     {
-        return Db::table(self::TABLE_NAME)
+        return Db::table(UserEnums::TABLE_USERS->value)
             ->select('*')
             ->get()
             ->toArray();
