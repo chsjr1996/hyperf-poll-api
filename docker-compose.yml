@@ -1,17 +1,75 @@
 version: '3'
 services:
-  hyperf-skeleton:
-    container_name: hyperf-skeleton
+  hyperf-poll-api:
+    container_name: hyperf-poll-api
     image: hyperf-skeleton
     build:
       context: .
+    command: php bin/hyperf.php server:watch
     volumes:
-      - ./:/opt/www
+      - ./:/opt/www:z
     ports:
       - 9501:9501
     environment:
       - APP_ENV=dev
       - SCAN_CACHEABLE=false
+    depends_on:
+      - hyperf-memory-database
+      - hyperf-database
+      - hyperf-tracer
+      - hyperf-message-broker
+
+  hyperf-memory-database:
+    image: redis:7.2.4-alpine3.19
+    container_name: hyperf-redis
+    ports:
+      - 6379:6379
+
+  hyperf-database:
+    image: mysql:5.7
+    container_name: hyperf-database
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=hyperf_dev_db
+      - MYSQL_DATABASE=hyperf_dev_db
+    volumes:
+      - ./.docker/mysql:/var/lib/mysql:z
+
+  hyperf-tracer:
+    image: openzipkin/zipkin:3
+    container_name: hyperf-tracer
+    ports:
+      - 9411:9411
+
+  hyperf-message-broker:
+    image: bitnami/kafka:3.6.2
+    container_name: hyperf-message-broker
+    ports:
+      - 9092:9092
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@hyperf-message-broker:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8081:8080
+    depends_on:
+      - hyperf-message-broker
+    environment:
+      KAFKA_CLUSTERS_0_NAME: HyperF
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: hyperf-message-broker:9092
+      DYNAMIC_CONFIG_ENABLED: 'true'
 
 networks:
   default:
