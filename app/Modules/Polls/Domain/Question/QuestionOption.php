@@ -35,4 +35,15 @@ class QuestionOption
 
         return $this;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id ?? '',
+            'title' => $this->title,
+            'question_id' => $this->questionId,
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
+        ];
+    }
 }

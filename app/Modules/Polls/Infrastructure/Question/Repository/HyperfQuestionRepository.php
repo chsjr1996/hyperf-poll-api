@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Polls\Infrastructure\Question\Repository;
 
 use App\Modules\Polls\Domain\Question\Question;
+use App\Modules\Polls\Domain\Question\QuestionOption;
 use App\Modules\Polls\Domain\Question\QuestionRepositoryContract;
 use App\Modules\Shared\Infrastructure\Repository\AbstractHyperfRepository;
 use Hyperf\DbConnection\Db;
@@ -15,6 +16,7 @@ use function Hyperf\Support\now;
 class HyperfQuestionRepository extends AbstractHyperfRepository implements QuestionRepositoryContract
 {
     public const TABLE_NAME = 'questions';
+    public const TABLE_OPTIONS_NAME = 'question_options';
 
     public function add(Question $question): Question|false
     {
@@ -67,5 +69,58 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
             ->select('*')
             ->get()
             ->toArray();
+    }
+
+    public function addOption(QuestionOption $questionOption): QuestionOption|false
+    {
+        try {
+            Db::beginTransaction();
+
+            $questionOption->setId(Uuid::uuid4()->toString());
+            $questionOption->setCreatedAt(now()->format('Y-m-d H:i:s'));
+            $questionOption->setUpdatedAt(now()->format('Y-m-d H:i:s'));
+
+            if (!Db::table(self::TABLE_OPTIONS_NAME)->insert($questionOption->toArray())) {
+                throw new \Exception('Error on add question option.');
+            }
+
+            Db::commit();
+
+            return $questionOption;
+        } catch (\Throwable $th) {
+            Db::rollBack();
+            $this->handleQueryException($th);
+
+            throw $th;
+        }
+    }
+
+    public function listOptions(string $questionId): array
+    {
+        return Db::table(self::TABLE_OPTIONS_NAME)
+            ->select('*')
+            ->where('question_id', $questionId)
+            ->get()
+            ->toArray();
+    }
+
+    public function readOption(string $questionId, string $optionId): ?QuestionOption
+    {
+        $questionOption = Db::table(self::TABLE_OPTIONS_NAME)
+            ->select('*')
+            ->where('question_id', $questionId)
+            ->where('id', $optionId)
+            ->first();
+
+        if (is_null($questionOption)) {
+            return null;
+        }
+
+        return new QuestionOption(
+            title: $questionOption->title,
+            questionId: $questionOption->question_id,
+            createdAt: $questionOption->created_at,
+            updatedAt: $questionOption->updated_at,
+        );
     }
 }
