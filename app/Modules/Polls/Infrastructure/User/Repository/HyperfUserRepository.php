@@ -14,6 +14,7 @@ use function Hyperf\Support\now;
 
 class HyperfUserRepository extends AbstractHyperfRepository implements UserRepositoryContract
 {
+    // TODO: Move it to enum inside domain?
     public const TABLE_NAME = 'users';
 
     public function add(User $user): User|false

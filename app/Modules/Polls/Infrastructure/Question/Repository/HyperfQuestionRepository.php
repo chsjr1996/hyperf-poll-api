@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Polls\Infrastructure\Question\Repository;
 
 use App\Modules\Polls\Domain\Question\Question;
+use App\Modules\Polls\Domain\Question\QuestionAnswer;
 use App\Modules\Polls\Domain\Question\QuestionOption;
 use App\Modules\Polls\Domain\Question\QuestionRepositoryContract;
+use App\Modules\Polls\Infrastructure\User\Repository\HyperfUserRepository;
 use App\Modules\Shared\Infrastructure\Repository\AbstractHyperfRepository;
 use Hyperf\DbConnection\Db;
 use Ramsey\Uuid\Uuid;
@@ -15,8 +17,10 @@ use function Hyperf\Support\now;
 
 class HyperfQuestionRepository extends AbstractHyperfRepository implements QuestionRepositoryContract
 {
+    // TODO: Move these table names to enum inside domain?
     public const TABLE_NAME = 'questions';
     public const TABLE_OPTIONS_NAME = 'question_options';
+    public const TABLE_ANSWERS_NAME = 'question_answers';
 
     public function add(Question $question): Question|false
     {
@@ -122,5 +126,41 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
             createdAt: $questionOption->created_at,
             updatedAt: $questionOption->updated_at,
         );
+    }
+
+    public function addAnswer(QuestionAnswer $questionAnswer): QuestionAnswer|false
+    {
+        try {
+            Db::beginTransaction();
+
+            $questionAnswer->setId(Uuid::uuid4()->toString());
+            $questionAnswer->setCreatedAt(now()->format('Y-m-d H:i:s'));
+            $questionAnswer->setUpdatedAt(now()->format('Y-m-d H:i:s'));
+
+            if (!Db::table(self::TABLE_ANSWERS_NAME)->insert($questionAnswer->toArray())) {
+                throw new \Exception('Error on add question answer.');
+            }
+
+            Db::commit();
+
+            return $questionAnswer;
+        } catch (\Throwable $th) {
+            Db::rollBack();
+            $this->handleQueryException($th);
+
+            throw $th;
+        }
+    }
+
+    public function listAnswers(string $questionId): array
+    {
+        return Db::table(sprintf('%s as u', HyperfUserRepository::TABLE_NAME))
+            ->select('u.name as user_name', 'q.title as question', 'o.title as answer')
+            ->join(sprintf('%s as a', self::TABLE_ANSWERS_NAME), 'a.user_id', '=', 'u.id')
+            ->join(sprintf('%s as o', self::TABLE_OPTIONS_NAME), 'o.id', '=', 'a.question_option_id')
+            ->join(sprintf('%s as q', self::TABLE_NAME), 'q.id', '=', 'o.question_id')
+            ->where('q.id', $questionId)
+            ->get()
+            ->toArray();
     }
 }

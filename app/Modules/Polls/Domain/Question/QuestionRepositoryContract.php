@@ -13,4 +13,7 @@ interface QuestionRepositoryContract
     public function addOption(QuestionOption $questionOption): QuestionOption|false;
     public function listOptions(string $questionId): array;
     public function readOption(string $questionId, string $optionId): ?QuestionOption;
+
+    public function addAnswer(QuestionAnswer $questionAnswer): QuestionAnswer|false;
+    public function listAnswers(string $questionId): array;
 }
