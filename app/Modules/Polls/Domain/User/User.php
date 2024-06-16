@@ -10,13 +10,13 @@ class User
         public readonly string $mailAddress,
         public readonly string $name,
         public readonly ?string $password = null,
-        public ?int $id = 0,
+        public ?string $id = null,
         public ?string $createdAt = null,
         public ?string $updatedAt = null
     ) {
     }
 
-    public function setId(int $id): self
+    public function setId(string $id): self
     {
         $this->id = $id;
 
@@ -40,7 +40,7 @@ class User
     public function toArray(): array
     {
         return [
-            'id' => $this->id ?? 0,
+            'id' => $this->id ?? '',
             'mail_address' => $this->mailAddress,
             'name' => $this->name,
             'password' => $this->password,

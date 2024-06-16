@@ -8,6 +8,7 @@ use App\Modules\Polls\Domain\User\User;
 use App\Modules\Polls\Domain\User\UserRepositoryContract;
 use App\Modules\Shared\Infrastructure\Repository\AbstractHyperfRepository;
 use Hyperf\DbConnection\Db;
+use Ramsey\Uuid\Uuid;
 
 use function Hyperf\Support\now;
 
@@ -19,12 +20,16 @@ class HyperfUserRepository extends AbstractHyperfRepository implements UserRepos
     {
         try {
             Db::beginTransaction();
+
+            $user->setId(Uuid::uuid4()->toString());
             $user->setCreatedAt(now()->format('Y-m-d H:i:s'));
             $user->setUpdatedAt(now()->format('Y-m-d H:i:s'));
-            $userId = Db::table(self::TABLE_NAME)->insertGetId($user->toArray());
-            Db::commit();
 
-            $user->setId($userId);
+            if (!Db::table(self::TABLE_NAME)->insert($user->toArray())) {
+                throw new \Exception('Error on add user.');
+            }
+
+            Db::commit();
 
             return $user;
         } catch (\Throwable $th) {
@@ -35,7 +40,7 @@ class HyperfUserRepository extends AbstractHyperfRepository implements UserRepos
         }
     }
 
-    public function read(int $id): ?User
+    public function read(string $id): ?User
     {
         $user = Db::table(self::TABLE_NAME)
             ->select('*')

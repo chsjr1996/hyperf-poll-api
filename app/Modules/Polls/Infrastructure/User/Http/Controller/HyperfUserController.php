@@ -34,7 +34,7 @@ class HyperfUserController extends HyperfAbstractController
     #[GetMapping('{id}')]
     public function read($id)
     {
-        $user = (new ReadUser($this->userRepository))->execute((int) $id);
+        $user = (new ReadUser($this->userRepository))->execute($id);
 
         if (is_null($user)) {
             return $this->response->json([])->withStatus(404);

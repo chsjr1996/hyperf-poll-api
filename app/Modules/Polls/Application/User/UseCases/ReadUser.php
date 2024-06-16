@@ -13,7 +13,7 @@ class ReadUser
     ) {
     }
 
-    public function execute(int $id)
+    public function execute(string $id)
     {
         return $this->userRepository->read($id);
     }
