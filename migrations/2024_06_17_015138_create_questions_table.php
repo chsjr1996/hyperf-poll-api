@@ -13,10 +13,13 @@ class CreateQuestionsTable extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->uuid('id')->unique()->index();
+            $table->uuid('author_id');
             $table->string('title');
             $table->string('description')->nullable();
-            $table->uuid('author_id');
+            $table->enum('status', ['open', 'close'])->index();
+            $table->timestamp('close_at')->nullable();
             $table->datetimes();
+            $table->softDeletes();
 
             // relationships
             $table->foreign('author_id')->references('id')->on('users');

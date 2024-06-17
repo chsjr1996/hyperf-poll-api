@@ -10,15 +10,31 @@ class Question
         public readonly string $title,
         public readonly string $description,
         public readonly string $authorId,
+        public QuestionStatus $status,
         public ?string $id = null,
+        public ?string $closeAt = null,
         public ?string $createdAt = null,
         public ?string $updatedAt = null
     ) {
     }
 
+    public function setStatus(QuestionStatus $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
     public function setId(string $id): self
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    public function setCloseAt(string $closeAt): self
+    {
+        $this->closeAt = $closeAt;
 
         return $this;
     }
@@ -44,6 +60,7 @@ class Question
             'title' => $this->title,
             'description' => $this->description,
             'author_id' => $this->authorId,
+            'status' => $this->status,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,
         ];

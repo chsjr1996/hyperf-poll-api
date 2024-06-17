@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Polls\Infrastructure\Question\Http\Request;
 
+use App\Modules\Polls\Domain\Question\QuestionStatus;
 use Hyperf\Validation\Request\FormRequest;
+use Hyperf\Validation\Rule;
 
 class StoreQuestionRequest extends FormRequest
 {
@@ -21,10 +23,29 @@ class StoreQuestionRequest extends FormRequest
      */
     public function rules(): array
     {
+        $validStatusArr = [
+            QuestionStatus::OPEN->value,
+            QuestionStatus::CLOSE->value,
+        ];
+
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'authorId' => 'required|string',
+            'status' => ['required', Rule::in($validStatusArr)],
+            'closeAt' => 'nullable|string',
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'title.required' => 'Title is required',
+            'status.required' => 'Status is required',
+            'status.in' => 'Status is not valid. Accept values are \'open\' or \'close\'',
         ];
     }
 }
