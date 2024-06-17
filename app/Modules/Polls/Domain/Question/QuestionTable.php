@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Polls\Domain\Question;
 
-enum QuestionTableEnums: string
+enum QuestionTable: string
 {
     case QUESTIONS = 'questions';
     case OPTIONS = 'question_options';

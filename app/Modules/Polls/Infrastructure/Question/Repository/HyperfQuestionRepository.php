@@ -8,8 +8,8 @@ use App\Modules\Polls\Domain\Question\Question;
 use App\Modules\Polls\Domain\Question\QuestionAnswer;
 use App\Modules\Polls\Domain\Question\QuestionOption;
 use App\Modules\Polls\Domain\Question\QuestionRepositoryContract;
-use App\Modules\Polls\Domain\Question\QuestionTableEnums;
-use App\Modules\Polls\Domain\User\UserTableEnums;
+use App\Modules\Polls\Domain\Question\QuestionTable;
+use App\Modules\Polls\Domain\User\UserTable;
 use App\Modules\Shared\Infrastructure\Repository\AbstractHyperfRepository;
 use Hyperf\DbConnection\Db;
 use Ramsey\Uuid\Uuid;
@@ -27,7 +27,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
             $question->setCreatedAt(now()->format('Y-m-d H:i:s'));
             $question->setUpdatedAt(now()->format('Y-m-d H:i:s'));
 
-            if (!Db::table(QuestionTableEnums::QUESTIONS->value)->insert($question->toArray())) {
+            if (!Db::table(QuestionTable::QUESTIONS->value)->insert($question->toArray())) {
                 throw new \Exception('Error on add question.');
             }
 
@@ -44,7 +44,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
 
     public function read(string $id): ?Question
     {
-        $question = Db::table(QuestionTableEnums::QUESTIONS->value)
+        $question = Db::table(QuestionTable::QUESTIONS->value)
             ->select('*')
             ->where('id', $id)
             ->first();
@@ -65,7 +65,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
 
     public function list(): array
     {
-        return Db::table(QuestionTableEnums::QUESTIONS->value)
+        return Db::table(QuestionTable::QUESTIONS->value)
             ->select('*')
             ->get()
             ->toArray();
@@ -80,7 +80,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
             $questionOption->setCreatedAt(now()->format('Y-m-d H:i:s'));
             $questionOption->setUpdatedAt(now()->format('Y-m-d H:i:s'));
 
-            if (!Db::table(QuestionTableEnums::OPTIONS->value)->insert($questionOption->toArray())) {
+            if (!Db::table(QuestionTable::OPTIONS->value)->insert($questionOption->toArray())) {
                 throw new \Exception('Error on add question option.');
             }
 
@@ -97,7 +97,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
 
     public function listOptions(string $questionId): array
     {
-        return Db::table(QuestionTableEnums::OPTIONS->value)
+        return Db::table(QuestionTable::OPTIONS->value)
             ->select('*')
             ->where('question_id', $questionId)
             ->get()
@@ -106,7 +106,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
 
     public function readOption(string $questionId, string $optionId): ?QuestionOption
     {
-        $questionOption = Db::table(QuestionTableEnums::OPTIONS->value)
+        $questionOption = Db::table(QuestionTable::OPTIONS->value)
             ->select('*')
             ->where('question_id', $questionId)
             ->where('id', $optionId)
@@ -133,7 +133,7 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
             $questionAnswer->setCreatedAt(now()->format('Y-m-d H:i:s'));
             $questionAnswer->setUpdatedAt(now()->format('Y-m-d H:i:s'));
 
-            if (!Db::table(QuestionTableEnums::ANSWERS->value)->insert($questionAnswer->toArray())) {
+            if (!Db::table(QuestionTable::ANSWERS->value)->insert($questionAnswer->toArray())) {
                 throw new \Exception('Error on add question answer.');
             }
 
@@ -150,11 +150,11 @@ class HyperfQuestionRepository extends AbstractHyperfRepository implements Quest
 
     public function listAnswers(string $questionId): array
     {
-        return Db::table(sprintf('%s as u', UserTableEnums::USERS->value))
+        return Db::table(sprintf('%s as u', UserTable::USERS->value))
             ->select('u.name as user_name', 'q.title as question', 'o.title as answer')
-            ->join(sprintf('%s as a', QuestionTableEnums::ANSWERS->value), 'a.user_id', '=', 'u.id')
-            ->join(sprintf('%s as o', QuestionTableEnums::OPTIONS->value), 'o.id', '=', 'a.question_option_id')
-            ->join(sprintf('%s as q', QuestionTableEnums::QUESTIONS->value), 'q.id', '=', 'o.question_id')
+            ->join(sprintf('%s as a', QuestionTable::ANSWERS->value), 'a.user_id', '=', 'u.id')
+            ->join(sprintf('%s as o', QuestionTable::OPTIONS->value), 'o.id', '=', 'a.question_option_id')
+            ->join(sprintf('%s as q', QuestionTable::QUESTIONS->value), 'q.id', '=', 'o.question_id')
             ->where('q.id', $questionId)
             ->get()
             ->toArray();

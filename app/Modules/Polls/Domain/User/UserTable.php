@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Polls\Domain\User;
 
-enum UserTableEnums: string
+enum UserTable: string
 {
     case USERS = 'users';
 }
